@@ -17,7 +17,10 @@ import ProjectFilters from '../components/ProjectFilters.vue'
 const route = useRoute()
 const router = useRouter()
 
-const entered = ref(typeof localStorage !== 'undefined' && localStorage.getItem('tc-portfolio-entered') === '1')
+const entered = ref(false)
+try {
+  entered.value = localStorage.getItem('tc-portfolio-entered') === '1'
+} catch { /* private mode */ }
 const progress = ref(0)
 const menuOpen = ref(false)
 const activeIndex = ref(0)
@@ -52,8 +55,12 @@ onMounted(async () => {
   }
 
   if (!reduced.value && !mobile.value) {
-    const mod = await import('../components/WebGLSpiral.vue')
-    WebGLSpiral.value = mod.default
+    try {
+      const mod = await import('../components/WebGLSpiral.vue')
+      WebGLSpiral.value = mod.default
+    } catch {
+      mode.value = 'list'
+    }
   }
 
   if (route.name === 'project' && route.params.slug) {
