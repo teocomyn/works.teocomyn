@@ -4,16 +4,21 @@ import { watch } from 'vue'
 const open = defineModel('open', { type: Boolean, default: false })
 const emit = defineEmits(['navigate'])
 
+const WHATSAPP_URL =
+  'https://api.whatsapp.com/send/?phone=33640189932'
+  + '&text=Bonjour+Teo%2C+je+te+contacte+depuis+ton+portfolio+pour+%C3%A9changer+sur+mon+projet.'
+  + '&type=phone_number&app_absent=0'
+
 const links = [
-  { id: 'home', label: 'projets' },
-  { id: 'about', label: 'à propos' },
-  { id: 'contact', label: 'contact', href: 'mailto:contact@teocomyn.com' },
+  { id: 'home', label: 'projets', num: '01' },
+  { id: 'about', label: 'à propos', num: '02' },
+  { id: 'contact', label: 'contact', num: '03', href: WHATSAPP_URL, external: true },
 ]
 
 const socials = [
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/teocomyn', icon: 'in' },
-  { label: 'Malt', href: 'https://www.malt.fr/profile/teocomyn', icon: 'mt' },
-  { label: 'Site', href: 'https://teocomyn.com', icon: 'www' },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/teocomyn' },
+  { label: 'Malt', href: 'https://www.malt.fr/profile/teocomyn' },
+  { label: 'teocomyn.com', href: 'https://teocomyn.com' },
 ]
 
 watch(open, (v) => {
@@ -22,7 +27,8 @@ watch(open, (v) => {
 
 function onLink(link) {
   if (link.href) {
-    window.open(link.href, link.href.startsWith('mailto') ? '_self' : '_blank')
+    window.open(link.href, '_blank', 'noopener,noreferrer')
+    open.value = false
     return
   }
   emit('navigate', link.id)
@@ -31,41 +37,64 @@ function onLink(link) {
 </script>
 
 <template>
-  <nav class="nav">
-    <div class="toggle-wrap">
+  <nav class="nav" :class="{ open }">
+    <div class="backdrop" aria-hidden="true" @click="open = false" />
+
+    <div class="shell">
       <button
-        class="menu-btn"
-        :class="{ opened: open }"
+        class="toggle"
         :aria-expanded="open"
+        :aria-label="open ? 'Fermer le menu' : 'Ouvrir le menu'"
         @click="open = !open"
       >
-        <span class="letters">
-          <span v-for="l in 'menu'" :key="l" class="letter">{{ l }}</span>
+        <span class="toggle-icon" aria-hidden="true">
+          <span class="bar bar-1" />
+          <span class="bar bar-2" />
         </span>
+        <span class="toggle-label">menu</span>
+        <span class="toggle-glow" aria-hidden="true" />
       </button>
 
-      <button
-        class="close-btn"
-        :class="{ opened: open }"
-        aria-label="Fermer le menu"
-        @click="open = false"
-      >
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">
-          <path d="M9.73 1.09a.25.25 0 0 0-.35 0L5 5.47.62 1.09a.25.25 0 0 0-.35.35L4.65 5.82.27 10.2a.25.25 0 0 0 .35.35L5 6.18l4.38 4.37a.25.25 0 0 0 .35-.35L5.35 5.82l4.38-4.38a.25.25 0 0 0 0-.35z" />
-        </svg>
-      </button>
-    </div>
+      <div class="panel">
+        <div class="panel-grain" aria-hidden="true" />
+        <div class="panel-accent" aria-hidden="true" />
 
-    <div class="panel-bg" :class="{ opened: open }" />
-    <div class="panel" :class="{ opened: open }">
-      <div class="panel-inner">
-        <div class="links" :class="{ opened: open }">
-          <div v-for="link in links" :key="link.id" class="link" @click="onLink(link)">
-            <span>{{ link.label }}</span>
+        <header class="panel-head">
+          <div class="panel-brand">
+            <img src="/logo.gif" alt="" class="panel-logo" />
+            <div>
+              <p class="panel-name">Teo Comyn</p>
+              <p class="panel-role">dev web & shopify</p>
+            </div>
           </div>
-        </div>
-        <div class="footer" :class="{ opened: open }">
-          <a href="mailto:contact@teocomyn.com">contact@teocomyn.com</a>
+          <span class="panel-count">{{ String(links.length).padStart(2, '0') }}</span>
+        </header>
+
+        <ul class="panel-links">
+          <li
+            v-for="(link, i) in links"
+            :key="link.id"
+            class="link-item"
+            :style="{ '--i': i }"
+          >
+            <button type="button" class="link" @click="onLink(link)">
+              <span class="link-num">{{ link.num }}</span>
+              <span class="link-label">{{ link.label }}</span>
+              <span class="link-arrow" aria-hidden="true">→</span>
+            </button>
+          </li>
+        </ul>
+
+        <footer class="panel-foot">
+          <div class="contact-block">
+            <a :href="WHATSAPP_URL" target="_blank" rel="noopener noreferrer" class="contact-primary">
+              WhatsApp
+              <span class="contact-dot" />
+            </a>
+            <a href="mailto:contact@teocomyn.com" class="contact-secondary">
+              contact@teocomyn.com
+            </a>
+          </div>
           <div class="socials">
             <a
               v-for="s in socials"
@@ -74,10 +103,9 @@ function onLink(link) {
               target="_blank"
               rel="noopener noreferrer"
               class="social"
-              :aria-label="s.label"
-            >{{ s.icon }}</a>
+            >{{ s.label }}</a>
           </div>
-        </div>
+        </footer>
       </div>
     </div>
   </nav>
@@ -91,179 +119,410 @@ function onLink(link) {
   z-index: 40;
 }
 
-.toggle-wrap {
-  position: relative;
-  z-index: 35;
-  width: fit-content;
-  height: 48rem;
+/* ── Backdrop ── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  transition: background 0.6s ease;
 }
 
-.menu-btn {
+.nav.open .backdrop {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+}
+
+/* ── Shell ── */
+.shell {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Toggle button ── */
+.toggle {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
-  height: 48rem;
+  gap: 12rem;
+  height: 52rem;
+  padding: 0 22rem 0 18rem;
+  border-radius: 100rem;
+  background: rgba(10, 10, 10, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--color-white);
+  font-size: 15rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  transition:
+    background 0.4s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease,
+    color 0.4s ease;
+}
+
+.toggle:hover {
+  border-color: rgba(33, 255, 192, 0.45);
+  box-shadow: 0 0 28px rgba(33, 255, 192, 0.12);
+}
+
+.nav.open .toggle {
   background: var(--color-white);
   color: var(--color-bg-dark);
-  font-size: 18rem;
-  font-weight: 500;
-  padding: 15rem 48rem 15rem 15rem;
-  border-radius: 100rem;
+  border-color: transparent;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 }
 
-.menu-btn.opened { pointer-events: none; }
-
-.letters {
-  display: flex;
-  gap: 1rem;
-  transition: opacity 0.2s ease 0.35s, transform 0.2s ease 0.35s;
-}
-
-.menu-btn.opened .letters {
+.toggle-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 50%, rgba(33, 255, 192, 0.15), transparent 60%);
   opacity: 0;
-  transform: translateX(5px);
-  transition-delay: 0s;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
 }
 
-.close-btn {
+.toggle:hover .toggle-glow {
+  opacity: 1;
+}
+
+.toggle-icon {
+  position: relative;
+  width: 18rem;
+  height: 12rem;
+  flex-shrink: 0;
+}
+
+.bar {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: currentColor;
+  border-radius: 2px;
+  transition: transform 0.45s var(--ease-spring), top 0.45s var(--ease-spring), opacity 0.3s ease;
+}
+
+.bar-1 { top: 1px; }
+.bar-2 { top: 10px; width: 70%; }
+
+.nav.open .bar-1 {
+  top: 5px;
+  transform: rotate(45deg);
+}
+
+.nav.open .bar-2 {
+  top: 5px;
+  width: 100%;
+  transform: rotate(-45deg);
+}
+
+.toggle-label {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.nav.open .toggle-label {
+  opacity: 0;
+  transform: translateX(6px);
+  width: 0;
+  overflow: hidden;
+}
+
+/* ── Panel ── */
+.panel {
   position: absolute;
   top: 0;
-  right: 15rem;
-  z-index: 36;
-  width: 48rem;
-  height: 48rem;
-  border-radius: 24rem;
-  background: var(--color-bg-dark);
-  color: var(--color-white);
+  right: 0;
+  width: 52rem;
+  height: 52rem;
+  border-radius: 26rem;
+  background: #0e0e0e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    width 0.85s var(--ease-spring),
+    height 0.9s var(--ease-spring),
+    border-radius 0.7s ease,
+    opacity 0.3s ease;
+}
+
+.nav.open .panel {
+  width: min(440px, calc(100vw - var(--grid-margin) * 2));
+  height: min(580px, calc(100dvh - var(--grid-margin) * 2 - 20rem));
+  border-radius: 20rem;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.panel-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px;
+}
+
+.panel-accent {
+  position: absolute;
+  top: -80rem;
+  right: -80rem;
+  width: 240rem;
+  height: 240rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(33, 255, 192, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.panel-head {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transform: scale(0.125);
-  transform-origin: top right;
-  pointer-events: none;
-  transition: transform 0.8s var(--ease-spring), right 0.8s var(--ease-spring);
-}
-
-.close-btn.opened {
-  transform: scale(1);
-  right: 20rem;
-  pointer-events: auto;
-}
-
-.close-btn svg {
+  justify-content: space-between;
+  padding: 72rem 28rem 24rem;
   opacity: 0;
-  transform: rotate(-45deg);
-  transition: opacity 0.3s ease, transform 0.5s ease;
+  transform: translateY(-8px);
+  transition: opacity 0.4s ease 0.15s, transform 0.5s var(--ease-spring) 0.15s;
 }
 
-.close-btn.opened svg {
+.nav.open .panel-head {
   opacity: 1;
-  transform: rotate(0);
+  transform: translateY(0);
 }
 
-.panel-bg,
-.panel {
-  position: fixed;
-  top: var(--grid-margin);
-  right: var(--grid-margin);
-  width: 87rem;
-  height: 48rem;
-  border-radius: 24rem;
-  overflow: hidden;
-  transition: width 0.9s var(--ease-spring), height 1s var(--ease-spring), border-radius 0.9s ease;
-  pointer-events: none;
-}
-
-.panel-bg { z-index: 15; background: var(--color-white); }
-.panel { z-index: 20; color: var(--color-bg-dark); }
-
-.panel-bg.opened,
-.panel.opened {
-  width: min(520px, calc(100vw - var(--grid-margin) * 2));
-  height: calc(100dvh - var(--grid-margin) * 2);
-  border-radius: 16rem;
-  pointer-events: auto;
-}
-
-.panel-inner {
+.panel-brand {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100%;
-  padding: var(--gap-20) 45rem;
+  align-items: center;
+  gap: 12rem;
 }
 
-.links .link {
-  font-size: clamp(40px, 8vw, 80rem);
+.panel-logo {
+  width: 40rem;
+  height: 40rem;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.panel-name {
+  font-size: 15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-white);
+}
+
+.panel-role {
+  font-size: 12rem;
+  opacity: 0.45;
+  margin-top: 2rem;
+  text-transform: lowercase;
+}
+
+.panel-count {
+  font-size: 12rem;
   font-weight: 500;
-  letter-spacing: -0.05em;
-  line-height: 1;
-  cursor: pointer;
-  position: relative;
-  width: fit-content;
-  margin-bottom: var(--gap-s);
-  transition: padding-left 0.5s var(--ease-spring);
+  opacity: 0.3;
+  letter-spacing: 0.1em;
+}
+
+/* ── Links ── */
+.panel-links {
+  list-style: none;
+  margin: 0;
+  padding: 8rem 16rem;
+}
+
+.link-item {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.45s ease calc(0.2s + var(--i) * 0.07s),
+    transform 0.55s var(--ease-spring) calc(0.2s + var(--i) * 0.07s);
+}
+
+.nav.open .link-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 16rem;
+  width: 100%;
+  padding: 14rem 12rem;
+  border-radius: 12rem;
+  text-align: left;
+  color: var(--color-white);
+  transition: background 0.25s ease, padding-left 0.4s var(--ease-spring);
 }
 
 @media (hover: hover) {
-  .links .link:hover { padding-left: 40rem; }
-  .links .link:hover::before {
+  .link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    padding-left: 20rem;
+  }
+
+  .link:hover .link-num {
+    color: var(--color-pop-green);
+  }
+
+  .link:hover .link-arrow {
     opacity: 1;
-    transform: translateY(-50%) scale(1);
+    transform: translateX(0);
   }
 }
 
-.links .link::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 24rem;
-  height: 24rem;
-  border-radius: 24rem;
-  background: var(--color-bg-dark);
-  opacity: 0;
-  transform: translateY(-50%) scale(0);
-  transition: transform 0.5s var(--ease-spring), opacity 0.5s var(--ease-spring);
+.link-num {
+  font-size: 13rem;
+  font-weight: 500;
+  opacity: 0.35;
+  letter-spacing: 0.05em;
+  min-width: 24rem;
+  transition: color 0.25s ease;
 }
 
-.footer {
+.link-label {
+  flex: 1;
+  font-size: clamp(28px, 6vw, 42rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  text-transform: lowercase;
+}
+
+.link-arrow {
+  font-size: 20rem;
+  opacity: 0;
+  transform: translateX(-8px);
+  color: var(--color-pop-green);
+  transition: opacity 0.3s ease, transform 0.4s var(--ease-spring);
+}
+
+/* ── Footer ── */
+.panel-foot {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 100%;
-  padding: var(--gap-20) 45rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20rem;
+  right: 0;
+  padding: 20rem 28rem 28rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   opacity: 0;
-  transform: translateY(-10px);
-  transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s;
+  transform: translateY(10px);
+  transition: opacity 0.45s ease 0.35s, transform 0.5s ease 0.35s;
 }
 
-.footer.opened { opacity: 1; transform: translateY(0); }
-.footer a { font-size: 16rem; font-weight: 500; }
-.socials { display: flex; gap: 8rem; }
+.nav.open .panel-foot {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.contact-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+  margin-bottom: 16rem;
+}
+
+.contact-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rem;
+  font-size: 15rem;
+  font-weight: 600;
+  color: var(--color-white);
+  width: fit-content;
+  transition: color 0.2s ease;
+}
+
+.contact-primary:hover {
+  color: var(--color-pop-green);
+}
+
+.contact-dot {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  background: var(--color-pop-green);
+  box-shadow: 0 0 8px var(--color-pop-green);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.contact-secondary {
+  font-size: 13rem;
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+}
+
+.contact-secondary:hover {
+  opacity: 0.75;
+}
+
+.socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rem;
+}
 
 .social {
-  width: 48rem;
-  height: 48rem;
-  border-radius: 50%;
-  background: var(--color-bg-dark);
-  color: var(--color-white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  transition: transform 0.3s ease, background 0.3s ease;
+  font-size: 12rem;
+  font-weight: 500;
+  padding: 8rem 14rem;
+  border-radius: 100rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  transition: border-color 0.25s ease, color 0.25s ease, background 0.25s ease;
 }
 
 .social:hover {
-  transform: scale(0.92);
-  background: var(--color-grey);
-  color: var(--color-black);
+  border-color: rgba(33, 255, 192, 0.4);
+  color: var(--color-pop-green);
+  background: rgba(33, 255, 192, 0.06);
+}
+
+@media screen and (max-width: 900px) {
+  .nav.open .panel {
+    width: calc(100vw - var(--grid-margin) * 2);
+    height: calc(100dvh - var(--grid-margin) * 2);
+  }
+
+  .link-label {
+    font-size: 32rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link-item,
+  .panel-head,
+  .panel-foot,
+  .panel,
+  .bar,
+  .toggle-label {
+    transition: none;
+  }
+
+  .nav.open .link-item,
+  .nav.open .panel-head,
+  .nav.open .panel-foot {
+    opacity: 1;
+    transform: none;
+  }
+
+  .contact-dot {
+    animation: none;
+  }
 }
 </style>

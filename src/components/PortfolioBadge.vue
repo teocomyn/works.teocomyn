@@ -4,6 +4,11 @@ defineProps({
 })
 
 const skills = ['Shopify', 'Liquid', 'Vue', 'Three.js', 'UI/UX', 'E-commerce']
+
+const WHATSAPP_URL =
+  'https://api.whatsapp.com/send/?phone=33640189932'
+  + '&text=Bonjour+Teo%2C+je+te+contacte+depuis+ton+portfolio+pour+%C3%A9changer+sur+mon+projet.'
+  + '&type=phone_number&app_absent=0'
 </script>
 
 <template>
@@ -13,6 +18,8 @@ const skills = ['Shopify', 'Liquid', 'Vue', 'Three.js', 'UI/UX', 'E-commerce']
         <span class="dot" />
         <span>disponible pour projets</span>
       </div>
+
+      <p class="brands">+60 marques accompagnées</p>
 
       <div class="stats">
         <div class="stat">
@@ -31,7 +38,12 @@ const skills = ['Shopify', 'Liquid', 'Vue', 'Three.js', 'UI/UX', 'E-commerce']
         </div>
       </div>
 
-      <a href="mailto:contact@teocomyn.com" class="cta">
+      <a
+        :href="WHATSAPP_URL"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="cta"
+      >
         me contacter
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
           <path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -81,7 +93,16 @@ const skills = ['Shopify', 'Liquid', 'Vue', 'Three.js', 'UI/UX', 'E-commerce']
   text-transform: uppercase;
   letter-spacing: 0.1em;
   opacity: 0.7;
-  margin-bottom: 16rem;
+  margin-bottom: 10rem;
+}
+
+.brands {
+  font-size: 13rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 14rem;
+  color: var(--color-bg-dark);
+  opacity: 0.85;
 }
 
 .dot {
