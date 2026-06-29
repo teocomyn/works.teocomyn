@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "gsap": "^3.13.0",
+    "hls.js": "^1.6.16",
     "three": "^0.178.0",
     "vue": "^3.5.17",
     "vue-router": "^4.6.4"
