@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import gsap from 'gsap'
 import { useReducedMotion } from '../composables/useReducedMotion.js'
 
@@ -22,6 +22,7 @@ const exiting = ref(false)
 const words = ['développeur', 'web', '&', 'créateur', 'shopify']
 let hls = null
 let progressInterval = null
+let gsapCtx = null
 
 async function initVideo() {
   const video = videoEl.value
@@ -99,19 +100,23 @@ function enter() {
     .to('.percentage', { opacity: 0, duration: 0.35 }, '<')
     .to('.corner', { opacity: 0, scale: 0.8, duration: 0.4 }, '<')
     .to('.video-layer', { scale: 1.2, opacity: 0, duration: 0.9, ease: 'power2.in' }, '-=0.2')
-    .to('.iris', { scale: 0, duration: 1.1, ease: 'power4.in' }, '-=0.5')
+    .to('.iris', { scale: 1, duration: 1.1, ease: 'power4.in' }, '-=0.5')
     .to(root.value, { opacity: 0, duration: 0.3 }, '-=0.15')
 }
 
-onMounted(() => {
+onMounted(async () => {
   initVideo()
-  if (reduced.value) runStaticIntro()
-  else runIntroAnimation()
+  await nextTick()
+  gsapCtx = gsap.context(() => {
+    if (reduced.value) runStaticIntro()
+    else runIntroAnimation()
+  }, root.value)
   startProgress()
 })
 
 onUnmounted(() => {
   clearInterval(progressInterval)
+  gsapCtx?.revert()
   hls?.destroy()
 })
 </script>
@@ -304,9 +309,9 @@ onUnmounted(() => {
   inset: 0;
   z-index: 50;
   background: var(--color-bg-dark);
-  clip-path: circle(150% at 50% 50%);
   pointer-events: none;
-  transform: scale(1);
+  transform: scale(0);
+  will-change: transform;
 }
 
 /* ── Corner brackets ── */

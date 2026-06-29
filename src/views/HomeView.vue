@@ -17,7 +17,7 @@ import ProjectFilters from '../components/ProjectFilters.vue'
 const route = useRoute()
 const router = useRouter()
 
-const entered = ref(localStorage.getItem('tc-portfolio-entered') === '1')
+const entered = ref(typeof localStorage !== 'undefined' && localStorage.getItem('tc-portfolio-entered') === '1')
 const progress = ref(0)
 const menuOpen = ref(false)
 const activeIndex = ref(0)
@@ -165,7 +165,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
       @active-change="activeIndex = $event"
     />
 
-    <template v-if="mode === 'list' || mobile || reduced">
+    <template v-if="mode === 'list' || mobile || reduced || (mode === 'spiral' && !WebGLSpiral)">
       <ProjectFilters v-model:filter="filter" v-model:search="search" :stats="stats" />
       <ProjectList :projects="filteredProjects" @select="openProject" />
     </template>
